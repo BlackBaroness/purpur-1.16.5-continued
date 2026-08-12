@@ -1,3 +1,6 @@
+import com.github.jengelman.gradle.plugins.shadow.tasks.ShadowJar
+import org.gradle.api.tasks.javadoc.Javadoc
+
 plugins {
     `java-library`
     `maven-publish`
@@ -42,12 +45,50 @@ subprojects {
     }
 
     java {
-        sourceCompatibility = JavaVersion.toVersion(8)
-        targetCompatibility = JavaVersion.toVersion(8)
+        sourceCompatibility = JavaVersion.toVersion(17)
+        targetCompatibility = JavaVersion.toVersion(17)
+    }
+
+    tasks.withType<Javadoc>().configureEach {
+        isFailOnError = false
     }
 
     publishing.repositories.maven {
         url = uri("https://repo.pl3x.net/snapshots")
         credentials(PasswordCredentials::class)
+    }
+}
+
+project(":purpur-server") {
+    val runtimeClasspath = configurations.named("runtimeClasspath")
+
+    tasks.withType<ShadowJar>().configureEach {
+        dependencies {
+            exclude(dependency("io.papermc:minecraft-server:.*"))
+        }
+        from({
+            runtimeClasspath.get()
+                .filter { it.name.startsWith("minecraft-server-") }
+                .map {
+                    zipTree(it).matching {
+                        exclude(
+                            "com/google/common/**",
+                            "com/google/gson/**",
+                            "com/google/thirdparty/**",
+                            "io/netty/**",
+                            "META-INF/io.netty.versions.properties",
+                            "META-INF/native/libnetty*",
+                            "com/mojang/brigadier/**",
+                            "org/apache/logging/**",
+                            "org/slf4j/**",
+                            "META-INF/MANIFEST.MF",
+                            "com/mojang/authlib/yggdrasil/YggdrasilGameProfileRepository.class",
+                            "net/minecraft/server/MinecraftVersion.class",
+                            "META-INF/org/apache/logging/log4j/core/config/plugins/Log4j2Plugins.dat"
+                        )
+                    }
+                }
+        })
+        exclude("META-INF/services/javax.annotation.processing.Processor")
     }
 }

@@ -1,19 +1,72 @@
-name: Build Purpur
-on: [ pull_request ]
+name: Build
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: build-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-24.04
+    timeout-minutes: 60
     steps:
-      - uses: actions/checkout@v2
-      - uses: gradle/wrapper-validation-action@v1
-      - name: Set up JDK
-        uses: actions/setup-java@v2
+      - name: Checkout
+        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
-          distribution: 'adopt'
-          java-version: '15'
-      - name: Configure Git
-        run: git config --global user.email "no-reply@github.com" && git config --global user.name "Github Actions"
-      - name: Apply patches
-        run: ./gradlew applyPatches
+          persist-credentials: false
+
+      - name: Set up JDK
+        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+        with:
+          distribution: temurin
+          java-version: '17'
+          check-latest: true
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@67621b124fd2e251c5e8a0e6e3b91318f2287669 # v6.3.0
+        with:
+          cache-provider: basic
+
+      - name: Restore upstream inputs
+        run: |
+          git clone https://hub.spigotmc.org/stash/scm/spigot/builddata.git Paper/work/BuildData
+          git clone https://hub.spigotmc.org/stash/scm/spigot/bukkit.git Paper/work/Bukkit
+          git clone https://hub.spigotmc.org/stash/scm/spigot/craftbukkit.git Paper/work/CraftBukkit
+          git clone https://hub.spigotmc.org/stash/scm/spigot/spigot.git Paper/work/Spigot
+          git clone https://github.com/PaperMC/Paperclip.git Paper/work/Paperclip
+          git -C Paper/work/BuildData checkout --detach f0a5ed1aeff8156ba4afa504e190c838dd1af50c
+          git -C Paper/work/Bukkit checkout --detach 7e29f7654411f0a17ebbcc2c3f6a7dfe93bff39e
+          git -C Paper/work/CraftBukkit checkout --detach 296df56673771692593156995684ab8041925d9d
+          git -C Paper/work/Spigot checkout --detach 9fb885e86def1d9d86e25233c9b5a4de45b7a09d
+          git -C Paper/work/Paperclip checkout --detach 6776c66987a021a1c0db55b2e21c883660acc19f
+
       - name: Build
-        run: ./gradlew build
+        run: |
+          git config --global user.name "GitHub Actions"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git config --global gc.auto 0
+          if [ ! -e Paper/.git ]; then
+            git -C Paper init --initial-branch=master
+            git -C Paper add .
+            git -C Paper commit -m "Initialize Paper workspace"
+          fi
+          chmod +x gradlew
+          ./gradlew applyPatches --stacktrace --no-daemon
+          ./gradlew paperclip -x javadoc -x javadocJar --stacktrace --no-daemon
+
+      - name: Upload final JAR
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          path: purpur-paperclip.jar
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
