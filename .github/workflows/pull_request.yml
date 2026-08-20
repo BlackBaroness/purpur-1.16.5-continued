@@ -31,11 +31,6 @@ jobs:
           java-version: '17'
           check-latest: true
 
-      - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@67621b124fd2e251c5e8a0e6e3b91318f2287669 # v6.3.0
-        with:
-          cache-provider: basic
-
       - name: Restore upstream inputs
         run: |
           git clone https://hub.spigotmc.org/stash/scm/spigot/builddata.git Paper/work/BuildData
