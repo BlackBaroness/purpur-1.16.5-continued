@@ -47,7 +47,8 @@ jobs:
           git -C Paper/work/Bukkit checkout --detach 7e29f7654411f0a17ebbcc2c3f6a7dfe93bff39e
           git -C Paper/work/CraftBukkit checkout --detach 296df56673771692593156995684ab8041925d9d
           git -C Paper/work/Spigot checkout --detach 9fb885e86def1d9d86e25233c9b5a4de45b7a09d
-          git -C Paper/work/Paperclip checkout --detach 6776c66987a021a1c0db55b2e21c883660acc19f
+          git -C Paper/work/Paperclip fetch --depth=1 origin 6776c66987a021a1c0db55b2e21c883660acc19f
+          git -C Paper/work/Paperclip checkout --detach FETCH_HEAD
 
       - name: Build
         run: |
