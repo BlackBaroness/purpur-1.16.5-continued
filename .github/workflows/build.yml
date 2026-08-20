@@ -16,19 +16,17 @@ concurrency:
 
 jobs:
   build:
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
     timeout-minutes: 60
     steps:
-      - name: Checkout
-        uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-        with:
-          persist-credentials: false
+      - name: Clone project
+        uses: actions/checkout@v7
 
-      - name: Set up JDK
-        uses: actions/setup-java@03ad4de0992f5dab5e18fcb136590ce7c4a0ac95 # v5.6.0
+      - name: Install JDK
+        uses: actions/setup-java@v5
         with:
-          distribution: temurin
           java-version: '17'
+          distribution: 'temurin'
           check-latest: true
 
       - name: Restore upstream inputs
@@ -45,22 +43,19 @@ jobs:
           git -C Paper/work/Paperclip fetch --depth=1 origin 6776c66987a021a1c0db55b2e21c883660acc19f
           git -C Paper/work/Paperclip checkout --detach FETCH_HEAD
 
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+        with:
+          cache-provider: basic
+          
       - name: Build
         run: |
-          git config --global user.name "GitHub Actions"
-          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git config --global gc.auto 0
-          if [ ! -e Paper/.git ]; then
-            git -C Paper init --initial-branch=master
-            git -C Paper add .
-            git -C Paper commit -m "Initialize Paper workspace"
-          fi
           chmod +x gradlew Paper/paper Paper/scripts/*.sh
           ./gradlew applyPatches --stacktrace --no-daemon
           ./gradlew paperclip -x javadoc -x javadocJar --stacktrace --no-daemon
 
       - name: Upload final JAR
-        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        uses: actions/upload-artifact@7 # v7.0.1
         with:
           path: purpur-paperclip.jar
           archive: false
