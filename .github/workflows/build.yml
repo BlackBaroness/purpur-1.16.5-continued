@@ -39,7 +39,8 @@ jobs:
           git -C Paper init --quiet
           git -C Paper commit --allow-empty --message "Initialize Paper workspace"
           chmod +x gradlew Paper/paper Paper/scripts/*.sh
-          ./gradlew applyPatches paperclip -x javadoc -x javadocJar --stacktrace --no-daemon
+          ./gradlew applyPatches --stacktrace
+          ./gradlew paperclip -x javadoc -x javadocJar --stacktrace
 
       - name: Upload artifact
         uses: actions/upload-artifact@v7
