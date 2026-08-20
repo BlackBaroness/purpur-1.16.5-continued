@@ -46,7 +46,7 @@ jobs:
           retention-days: 14
 
   release:
-    if: github.event_name != 'pull_request'
+    if: ${{ github.ref_name == github.event.repository.default_branch }}
     needs: build
     runs-on: ubuntu-latest
     permissions:
@@ -69,3 +69,11 @@ jobs:
           generate_release_notes: true
           prerelease: ${{ github.ref_name != github.event.repository.default_branch }}
           make_latest: ${{ github.ref_name == github.event.repository.default_branch }}
+
+      - name: Delete old releases
+        uses: dev-drprasad/delete-older-releases@v0.3.4
+        with:
+          keep_latest: 500
+          delete_tags: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
