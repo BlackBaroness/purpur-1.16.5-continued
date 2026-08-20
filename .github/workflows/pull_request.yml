@@ -55,7 +55,7 @@ jobs:
             git -C Paper add .
             git -C Paper commit -m "Initialize Paper workspace"
           fi
-          chmod +x gradlew
+          chmod +x gradlew Paper/paper Paper/scripts/*.sh
           ./gradlew applyPatches --stacktrace --no-daemon
           ./gradlew paperclip -x javadoc -x javadocJar --stacktrace --no-daemon
 
