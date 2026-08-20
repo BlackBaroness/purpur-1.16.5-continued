@@ -19,29 +19,14 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v7
+        with:
+          submodules: recursive
 
       - name: Set up Java
         uses: actions/setup-java@v5
         with:
           distribution: temurin
           java-version: 17
-
-      - name: Restore upstream sources
-        shell: bash
-        run: |
-          clone_at() {
-            local name=$1 revision=$2 path="Paper/work/$1"
-            local url
-            url=$(git config -f Paper/.gitmodules --get "submodule.work/$name.url")
-            git clone --filter=blob:none --no-checkout "$url" "$path"
-            git -C "$path" checkout --detach "$revision"
-          }
-
-          clone_at BuildData f0a5ed1aeff8156ba4afa504e190c838dd1af50c
-          clone_at Bukkit 7e29f7654411f0a17ebbcc2c3f6a7dfe93bff39e
-          clone_at CraftBukkit 296df56673771692593156995684ab8041925d9d
-          clone_at Spigot 9fb885e86def1d9d86e25233c9b5a4de45b7a09d
-          clone_at Paperclip 6776c66987a021a1c0db55b2e21c883660acc19f
 
       - name: Setup Gradle
         uses: gradle/actions/setup-gradle@v6
