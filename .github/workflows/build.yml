@@ -34,8 +34,8 @@ jobs:
 
       - name: Build
         run: |
-          git config --global user.name github-actions[bot]
-          git config --global user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           chmod +x gradlew Paper/paper Paper/scripts/*.sh
           ./gradlew applyPatches paperclip -x javadoc -x javadocJar --stacktrace
 
@@ -69,8 +69,7 @@ jobs:
           target_commitish: ${{ github.sha }}
           name: 'Build #${{ github.run_number }}.${{ github.run_attempt }}'
           generate_release_notes: true
-          prerelease: ${{ github.ref_name != github.event.repository.default_branch }}
-          make_latest: ${{ github.ref_name == github.event.repository.default_branch }}
+          make_latest: trie
 
       - name: Delete old releases
         uses: dev-drprasad/delete-older-releases@v0.3.4
