@@ -79,7 +79,7 @@ jobs:
           fail_on_unmatched_files: true
           tag_name: build-${{ github.run_number }}.${{ github.run_attempt }}
           target_commitish: ${{ github.sha }}
-          name: 'Purpur 1.16.5 build #${{ github.run_number }}.${{ github.run_attempt }}'
+          name: 'Build #${{ github.run_number }}.${{ github.run_attempt }}'
           generate_release_notes: true
           prerelease: ${{ github.ref_name != github.event.repository.default_branch }}
           make_latest: ${{ github.ref_name == github.event.repository.default_branch }}
