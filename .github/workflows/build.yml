@@ -36,6 +36,8 @@ jobs:
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C Paper init --quiet
+          git -C Paper commit --allow-empty --message "Initialize Paper workspace"
           chmod +x gradlew Paper/paper Paper/scripts/*.sh
           ./gradlew applyPatches --stacktrace
           ./gradlew paperclip -x javadoc -x javadocJar --stacktrace
