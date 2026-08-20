@@ -60,3 +60,29 @@ jobs:
           archive: false
           if-no-files-found: error
           retention-days: 14
+
+  release:
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: purpur-paperclip.jar
+
+      - name: Publish prerelease
+        env:
+          GH_TOKEN: ${{ github.token }}
+          RELEASE_NAME: 'Purpur 1.16.5 build #${{ github.run_number }}.${{ github.run_attempt }}'
+          RELEASE_TAG: build-${{ github.run_number }}.${{ github.run_attempt }}
+        run: >-
+          gh release create "$RELEASE_TAG" purpur-paperclip.jar
+          --target "$GITHUB_SHA"
+          --title "$RELEASE_NAME"
+          --generate-notes
+          --prerelease
+          --latest=false
