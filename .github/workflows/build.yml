@@ -1,0 +1,75 @@
+name: Build
+
+on:
+  push:
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 60
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+        with:
+          submodules: recursive
+
+      - name: Set up Java
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: 17
+          check-latest: true
+
+      - name: Setup Gradle
+        uses: gradle/actions/setup-gradle@v6
+
+      - name: Build
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git -C Paper init --quiet
+          git -C Paper commit --allow-empty --message "Initialize Paper workspace"
+          chmod +x gradlew Paper/paper Paper/scripts/*.sh
+          ./gradlew applyPatches --stacktrace
+          ./gradlew paperclip -x javadoc -x javadocJar --stacktrace
+
+      - name: Upload artifact
+        uses: actions/upload-artifact@v7
+        with:
+          path: purpur-paperclip.jar
+          archive: false
+          if-no-files-found: error
+          retention-days: 14
+
+  release:
+    if: ${{ github.ref_name == github.event.repository.default_branch }}
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - name: Download artifact
+        uses: actions/download-artifact@v8
+        with:
+          name: purpur-paperclip.jar
+
+      - name: Publish release
+        uses: softprops/action-gh-release@v3
+        with:
+          files: purpur-paperclip.jar
+          fail_on_unmatched_files: true
+          tag_name: build-${{ github.run_number }}.${{ github.run_attempt }}
+          target_commitish: ${{ github.sha }}
+          name: 'Build #${{ github.run_number }} (run attempt #${{ github.run_attempt }})'
+          generate_release_notes: true
+          make_latest: trie
