@@ -32,6 +32,18 @@ toothpick {
     }
 }
 
+tasks.named("paperclip") {
+    doFirst {
+        val paperclipPom = layout.projectDirectory.file("Paper/work/Paperclip/assembly/pom.xml").asFile
+        paperclipPom.writeText(
+            paperclipPom.readText().replace(
+                "https://papermc.io/repo/repository/maven-releases/",
+                "https://repo.papermc.io/repository/maven-releases/"
+            )
+        )
+    }
+}
+
 subprojects {
     repositories {
         // use available dependency repositories for 1.16.5 builds
