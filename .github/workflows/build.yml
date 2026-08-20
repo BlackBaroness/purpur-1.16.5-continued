@@ -69,6 +69,6 @@ jobs:
           fail_on_unmatched_files: true
           tag_name: build-${{ github.run_number }}.${{ github.run_attempt }}
           target_commitish: ${{ github.sha }}
-          name: 'Build #${{ github.run_number }}.${{ github.run_attempt }}'
+          name: 'Build #${{ github.run_number }} (run attempt #${{ github.run_attempt }})'
           generate_release_notes: true
           make_latest: trie
