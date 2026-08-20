@@ -10,6 +10,7 @@ vanillajar="$workdir/Minecraft/$mcver/$mcver.jar"
 
 (
     cd "$workdir/Paperclip"
+    sed -i 's|https://papermc.io/repo/repository/maven-releases/|https://repo.papermc.io/repository/maven-releases/|' assembly/pom.xml
     mvn -U clean package "-Dmcver=$mcver" "-Dpaperjar=$paperjar" "-Dvanillajar=$vanillajar"
 )
 cp "$workdir/Paperclip/assembly/target/paperclip-${mcver}.jar" "$basedir/paperclip.jar"
